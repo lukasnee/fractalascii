@@ -5,14 +5,14 @@
 #include <sys/time.h>
 #include <time.h>
 
-#define DISP_HEIGHT 50
-#define DISP_WIDTH 100
+#define DISP_HEIGHT 80
+#define DISP_WIDTH 150
 #define DISP_MAX_FPS 30
 const char intensityPallete[] = " .:-=+*#%@";//"abcdefghijklmnopqrstuvxyz";
 const uint16_t intensityPalleteSize = sizeof(intensityPallete)/sizeof(char) - 1;
 static char dispBuffer[DISP_HEIGHT][DISP_WIDTH];
 
-static uint32_t max_iterations;
+static uint32_t max_iterations = intensityPalleteSize;
 
 static uint64_t dispAvgVal = 0;
 
@@ -30,7 +30,6 @@ static void displayDraw()
         printf("\r\n");
     }
     dispAvgVal /= DISP_HEIGHT * DISP_WIDTH;
-    max_iterations = dispAvgVal;
 }
 
 static void displayPixelSet(uint16_t x, uint16_t y, char c)
@@ -116,34 +115,53 @@ uint16_t mapDoubleToUint16(double x, double in_min, double in_max, uint16_t out_
     (in_max - in_min) + (double)(out_min));
 }
 
-void mandelbrotDraw(double x, double y, double widthScale)
+void mandelbrotDraw(double cx, double cy, double widthScale)
 {
-    double 
-        x0 = x - widthScale/2, 
-        x1 = x + widthScale/2,
-        y0 = y - widthScale/2  * ((double)DISP_HEIGHT/DISP_WIDTH),
-        y1 = y + widthScale/2  * ((double)DISP_HEIGHT/DISP_WIDTH);
-
     uint32_t pxIt = 0;
+    double 
+        xmin = cx - widthScale/2, 
+        xmax = cx + widthScale/2,
+        ymin = cy - widthScale/2  * ((double)DISP_HEIGHT/DISP_WIDTH),
+        ymax = cy + widthScale/2  * ((double)DISP_HEIGHT/DISP_WIDTH),
+        xres = DISP_WIDTH,
+        yres = DISP_HEIGHT;
 
-    double FxStep = (x1 - x0)/DISP_WIDTH;
-    double FyStep = (y1 - y0)/DISP_HEIGHT;
+    double dx = (xmax - xmin) / xres;
+    double dy = (ymax - ymin) / yres;
 
-    double Fx,Fy; // double iterators
-    for(Fy = y0; Fy <= y1; Fy+=FyStep)
+    double x, y; /* Coordinates of the current point in the complex plane. */
+    double u, v; /* Coordinates of the iterated point. */
+    int i, j;    /* Pixel counters */
+    int k;       /* Iteration counter */
+    for (j = 0; j < yres; j++)
     {
-        for(Fx = x0; Fx <= x1; Fx+=FxStep)
+        y = ymax - j * dy;
+        for (i = 0; i < xres; i++)
         {
-            //system("clear");
-            sprintf(&dispBuffer[1][0], "drawing pixel %d (%lf, %lf), avgVal=%lu\r\n", ++pxIt, Fx, Fy, dispAvgVal);
-
-            uint16_t iteration = mandelbrotGet(Fx, Fy);
-            //if(iteration)printf("iteration=%d\r\n", iteration);
-            uint16_t intensity = map(iteration, 0, max_iterations, 0, intensityPalleteSize);
-            uint16_t x = mapDoubleToUint16(Fx, x0, x1, 0, DISP_WIDTH-1);
-            uint16_t y = mapDoubleToUint16(Fy, y0, y1, 0, DISP_HEIGHT-1);
-
-            displayPixelSetByIntensity(x, y, intensity);    
+            double u = 0.0;
+            double v = 0.0;
+            double u2 = u * u;
+            double v2 = v * v;
+            x = xmin + i * dx;
+            /* iterate the point */
+            for (k = 1; k < max_iterations && (u2 + v2 < 4.0); k++)
+            {
+                v = 2 * u * v + y;
+                u = u2 - v2 + x;
+                u2 = u * u;
+                v2 = v * v;
+            };
+            /* compute  pixel color and write it to file */
+            if (k >= max_iterations)
+            {
+                displayPixelSetByIntensity(x, y, intensityPalleteSize-1);
+            }
+            else
+            {
+                uint16_t intensity = map(k, 0, max_iterations, 0, intensityPalleteSize);
+                displayPixelSetByIntensity(x, y, intensity);
+                sprintf(&dispBuffer[1][0], "drawing pixel %d (%lf, %lf), avgVal=%lu\r\n", ++pxIt, u, v, dispAvgVal);
+            };
         }
     }
 }
@@ -155,7 +173,7 @@ void main()
     double s = 0.02;
     double 
         x = 0, 
-        y = 1, 
+        y = 1,
         widthScale = 4;
 
     while(1)
