@@ -8,6 +8,6 @@ $ make fractalascii
 $ ./fractalascii
 ```
 ## Controls
-w, a, s, d - move.
-e - zoom in 10%.
-q - zoom out 10%.
+- `w`, `a`, `s`, `d` - move.
+- `e` - zoom in 10%.
+- `q` - zoom out 10%.
