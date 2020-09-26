@@ -13,11 +13,10 @@ void timerDelayMs(uint32_t ms)
     }
 }
 
-uint32_t timerGetFPS(Timer * pTimer, uint32_t * fFPS)
+void timerGetFPS(Timer * pTimer, uint32_t * fFPS)
 {
-    Timer frame;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &frame.end);
-    long fps = 1000000000/(frame.end.tv_nsec - frame.start.tv_nsec);
-    frame.start = frame.end;
-    return (uint32_t)fps;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &pTimer->end);
+    long fps = 1000000000/(pTimer->end.tv_nsec - pTimer->start.tv_nsec);
+    pTimer->start = pTimer->end;
+    *fFPS = fps;
 }

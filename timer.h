@@ -11,6 +11,6 @@ typedef struct Timer_
 }Timer;
 
 void timerDelayMs(uint32_t ms);
-uint32_t timerGetFPS(Timer * pTimer, uint32_t * fFPS);
+void timerGetFPS(Timer * pTimer, uint32_t * fFPS);
 
 #endif //TIMER_H

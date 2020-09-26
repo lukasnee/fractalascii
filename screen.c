@@ -14,10 +14,9 @@ uint8_t exitScreenFlag = 0;
 void screenStart()
 {
     initscr();
-    nocbreak();
+    cbreak();
     noecho();
     keypad(stdscr, TRUE);
-    
     clear();
     refresh();
 }
@@ -37,7 +36,10 @@ void screenShowFrame()
         mvprintw(0, 0, "[%ldFPS]", fps);
     }
     refresh();
-    timerDelayMs(1000/DISP_MAX_FPS);
+    if(DISP_MAX_FPS)
+    {
+        timerDelayMs(1000/DISP_MAX_FPS);
+    }
 }
 
 void screenExit()
@@ -93,7 +95,7 @@ void GraphViewUpdateMinMax(GraphView * pView)
 void GraphViewUpdateDeltas(GraphView * pView)
 {
     pView->dx = (pView->xmax - pView->xmin) / (double)pView->screen.width;
-    pView->dy = (pView->ymax - pView->ymin) / (double)pView->screen.width;
+    pView->dy = (pView->ymax - pView->ymin) / (double)pView->screen.height;
 }
 
 void GraphViewUpdatePerspective(GraphView * pView)
