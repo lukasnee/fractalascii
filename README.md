@@ -1,6 +1,5 @@
 # asciifractal
-ascii fractal - a mandelbrot
-
+mandelbrot fractal navigator in ascii in terminal using ncurses. 
 ```shell
 $ make fractalascii
 ```
