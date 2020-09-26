@@ -8,7 +8,7 @@
             "name": "(gdb) Mandelbrot",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/mandelbrot",
+            "program": "${workspaceFolder}/fractalascii",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
@@ -23,7 +23,5 @@
                 }
             ]
         }
-        
-
    ]
 }
