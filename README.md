@@ -1,5 +1,9 @@
-# asciifractal
-mandelbrot fractal navigator in ascii in terminal using ncurses. 
+# fractalascii
+
+![fractalascii-demo-by-lukasnee](fractalascii-demo.png)
+
+ASCII drawn Mandelbrot fractal terminal navigator. Made with ncurses.
+
 ```shell
 $ make fractalascii
 ```
@@ -10,3 +14,4 @@ $ ./fractalascii
 - `w`, `a`, `s`, `d` - move.
 - `e` - zoom in 10%.
 - `q` - zoom out 10%.
+- `c` - reset camera
