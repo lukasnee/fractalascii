@@ -11,119 +11,90 @@
 uint8_t showFPS = CONFIG_SHOW_FPS;
 uint8_t exitScreenFlag = 0;
 
+const Screen screenDefault = {
+	.width = 0,
+	.height = 0,
+	.ratio = 0.0,
+    .pixelAspectRatio = 1.0
+};
+
+Screen screen = screenDefault;
+
 void screenStart()
 {
-    initscr();
-    cbreak();
-    noecho();
-    keypad(stdscr, TRUE);
-    clear();
-    refresh();
+	initscr();
+	cbreak();
+	noecho();
+	keypad(stdscr, TRUE);
+	clear();
+	refresh();
 }
 
 void screenEnd()
 {
-    endwin();
+	endwin();
 }
 
 void screenShowFrame()
 {
-    if(showFPS) 
-    {
-        static Timer fpstimer;
-        uint32_t fps;
-        timerGetFPS(&fpstimer, &fps);
-        mvprintw(0, 0, "[%ldFPS]", fps);
-    }
-    refresh();
-    if(DISP_MAX_FPS)
-    {
-        timerDelayMs(1000/DISP_MAX_FPS);
-    }
+	if(showFPS) 
+	{
+		static Timer fpstimer;
+		uint32_t fps;
+		timerGetFPS(&fpstimer, &fps);
+		mvprintw(0, 0, "[%ldFPS]", fps);
+	}
+	refresh();
+	if(DISP_MAX_FPS)
+	{
+		timerDelayMs(1000/DISP_MAX_FPS);
+	}
 }
 
 void screenExit()
 {
-    exitScreenFlag = 1;
+	exitScreenFlag = 1;
 }
 
-void screenRun(void (*drawFnc)())
+void screenRun( void (*drawFnc)())
 {
-    screenStart();
+	screenStart();
 
-    while(!exitScreenFlag)
-    {
-        drawFnc();
-        screenShowFrame();
-    }
-    screenEnd();
+	while(!exitScreenFlag)
+	{
+		drawFnc();
+		screenShowFrame();
+	}
+	screenEnd();
 }
 
-const Screen screenDefault = {
-    .width = 0,
-    .height = 0,
-    .ratio = 0.0F
-};
-
-const GraphView graphViewDefault = {
-    .screen = screenDefault,
-    .sf = 5,
-    .cx = 0.0F,
-    .cy = 0.0F
-};
-
-void GraphViewReset(GraphView * pView)
+void ScreenUpdate()
 {
-    *pView = graphViewDefault;
+	screen.width = ScreenGetWidth();
+	screen.height = ScreenGetHeight();
+	screen.ratio = ScreenGetRatio();
 }
 
-void GraphViewScreenUpdate(Screen * pScreen)
+int ScreenGetWidth()
 {
-    pScreen->width = getmaxx(stdscr) + 1;
-    pScreen->height = getmaxy(stdscr) + 1;
-    pScreen->ratio = (double)pScreen->width/(double)pScreen->height;
+    return getmaxx(stdscr) + 1;
 }
 
-void GraphViewUpdateMinMax(GraphView * pView)
+int ScreenGetHeight()
 {
-    pView->xmin = pView->cx - pView->sf / 2.0F;
-    pView->xmax = pView->cx + pView->sf / 2.0F;
-    pView->ymin = pView->cy - pView->sf / 2.0F * pView->screen.ratio;
-    pView->ymax = pView->cy + pView->sf / 2.0F * pView->screen.ratio;
+    return getmaxy(stdscr) + 1;
 }
 
-void GraphViewUpdateDeltas(GraphView * pView)
+double ScreenGetRatio()
 {
-    pView->dx = (pView->xmax - pView->xmin) / (double)pView->screen.width;
-    pView->dy = (pView->ymax - pView->ymin) / (double)pView->screen.height;
+    return (double)ScreenGetWidth()/(double)ScreenGetHeight();
 }
 
-void GraphViewUpdatePerspective(GraphView * pView)
+void ScreenSetPixelAspectRatio(double pixelAspectRatio)
 {
-    GraphViewUpdateMinMax(pView);
-    GraphViewUpdateDeltas(pView);
+    screen.pixelAspectRatio = pixelAspectRatio;
 }
-
-void GraphViewUpdate(GraphView * pView)
+double ScreenGetPixelAspectRatio()
 {
-    GraphViewScreenUpdate(&pView->screen);
-    GraphViewUpdatePerspective(pView);
-}
-
-void GraphViewSetCenterX(GraphView * pView, double cx)
-{
-    pView->cx = cx;
-    GraphViewUpdate(pView);
-}
-
-void GraphViewSetCenterY(GraphView * pView, double cy)
-{
-    pView->cy = cy;
-    GraphViewUpdate(pView);
-}
-
-void GraphViewSetScaleFactor(GraphView * pView, double sf)
-{
-    pView->sf = sf;
-    GraphViewUpdate(pView);
+    return screen.pixelAspectRatio;
 }

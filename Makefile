@@ -4,6 +4,7 @@ CC=gcc
 SRCS += main.c
 SRCS += mandelbrot.c
 SRCS += screen.c
+SRCS += camera.c
 SRCS += stats.c
 SRCS += timer.c
 

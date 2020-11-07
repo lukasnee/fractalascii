@@ -6,44 +6,22 @@
 typedef struct Screen_
 {
     uint32_t width, height; // size in pixels
-
-     // derived (on update)
-    double ratio;
+    double ratio; // derived on ScreenUpdate()
+    double pixelAspectRatio;
 }Screen;
 
-//todo add rotation
-typedef struct GraphView_
-{
-    Screen screen;
-    double 
-        sf,        // scale factor
-        cx, cy;    // center
+extern const Screen screenDefault;
 
-    // derived (on update)
-    double 
-        xmin, xmax,
-        ymin, ymax,
-        dx,
-        dy;
-}GraphView;
-
+void ScreenUpdate();
 void screenStart();
 void ScreenEnd();
 void ScreenFrameShow();
 void screenExit();
 void screenRun(void (*drawFnc)());
 
-extern const Screen screenDefault;
-extern const GraphView graphViewDefault;
-
-void GraphViewReset(GraphView * pView);
-void GraphViewScreenUpdate(Screen * pScreen);
-void GraphViewUpdateMinMax(GraphView * pView);
-void GraphViewUpdateDeltas(GraphView * pView);
-void GraphViewUpdatePerspective(GraphView * pView);
-void GraphViewUpdate(GraphView * pView);
-void GraphViewSetCenterX(GraphView * pView, double cx);
-void GraphViewSetCenterY(GraphView * pView, double cy);
-void GraphViewSetScaleFactor(GraphView * pView, double sf);
-
+int ScreenGetWidth();
+int ScreenGetHeight();
+double ScreenGetRatio();
+void ScreenSetPixelAspectRatio(double pixelAspectRatio);
+double ScreenGetPixelAspectRatio();
 #endif //SCREEN_H
