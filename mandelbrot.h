@@ -1,3 +1,5 @@
 #include <stdint.h>
 
-uint16_t MandelbrotGet(double x, double y);
+uint32_t MandelbrotGetMaxIterations();
+void MandelbrotSetMaxIterations(uint32_t value);
+uint32_t MandelbrotGet(double x, double y);

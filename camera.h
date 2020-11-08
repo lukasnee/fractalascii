@@ -2,36 +2,33 @@
 #define CAMERA_H
 
 //todo add rotation
-typedef struct GraphView_
+typedef struct Camera_
 {
-    double 
-        sf,        // scale factor
-        cx, cy;    // center
+	double cx, cy, width, height; // whatcha lookin at ?!
 
-    // derived on GraphViewUpdate():
-    double 
-        xmin, xmax,
-        ymin, ymax,
-        dx,
-        dy;
-}GraphView;
+}Camera;
 
-extern const GraphView graphViewDefault;
+extern const Camera CameraDefault;
 
-void GraphViewReset(GraphView * pView);
-void GraphViewUpdateMinMax(GraphView * pView);
-void GraphViewUpdateDeltas(GraphView * pView);
-void GraphViewUpdatePerspective(GraphView * pView);
-void GraphViewUpdate(GraphView * pView);
-double GraphViewGetCenterY(GraphView * pView);
-void GraphViewSetCenterX(GraphView * pView, double cx);
-double GraphViewGetCenterY(GraphView * pView);
-void GraphViewSetCenterY(GraphView * pView, double cy);
-double GraphViewGetScaleFactor(GraphView * pView);
-void GraphViewSetScaleFactor(GraphView * pView, double sf);
-int GraphViewGetCenterInString(GraphView * pView, char * pString);
-int GraphViewGetXaxisInString(GraphView * pView, char * pString);
-int GraphViewGetYaxisInString(GraphView * pView, char * pString);
-int GraphViewGetStatsInString(GraphView * pView, char * pString);
+double CameraGetCenterX(Camera * pCamera);
+void CameraSetCenterX(Camera * pCamera, double cx);
+double CameraGetCenterY(Camera * pCamera);
+void CameraSetCenterY(Camera * pCamera, double cy);
+double CameraGetWidth(Camera * pCamera);
+void CameraSetWidth(Camera * pCamera, double width);
+double CameraGetHeight(Camera * pCamera);
+void CameraSetHeight(Camera * pCamera, double height);
+double CameraGetAspectRatio(Camera * pCamera);
+void CameraSetPosition(Camera * pCamera,  double cx, double cy, double width);
+
+double CameraGetXmin(Camera * pCamera);
+double CameraGetXmax(Camera * pCamera);
+double CameraGetYmin(Camera * pCamera);
+double CameraGetYmax(Camera * pCamera);
+
+void CameraZoom(Camera * pCamera, double scale);
+void CameraReset(Camera * pCamera);
+//double CameraGetRotation(Camera * pCamera);
+//void CameraSetRotation(Camera * pCamera, double angle);
 
 #endif //CAMERA_H

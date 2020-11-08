@@ -7,7 +7,7 @@
 
 typedef struct Timer_
 {
-    struct timespec start, end;
+	struct timespec start, end;
 }Timer;
 
 void timerDelayMs(uint32_t ms);

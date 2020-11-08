@@ -4,105 +4,102 @@
 #include <stdio.h>
 #include "screen.h"
 
-const GraphView graphViewDefault = {
-	.sf = 5,
-	.cx = 0.0,
-	.cy = 0.0,
-    .xmin = -0.5,
-    .xmax = 0.5,
-    .ymin = -0.5,
-    .ymax = 0.5,
-    .dx = 0.01,
-    .dy = 0.01
-};
-
-void GraphViewReset(GraphView * pView)
+double CameraGetCenterX(Camera * pCamera)
 {
-	*pView = graphViewDefault;
+	return pCamera->cx;
 }
 
-void GraphViewUpdateMinMax(GraphView * pView)
+void CameraSetCenterX(Camera * pCamera, double cx)
 {
-	pView->xmin = pView->cx - pView->sf / 2.0F;
-	pView->xmax = pView->cx + pView->sf / 2.0F;
-	pView->ymin = pView->cy - pView->sf / 2.0F * 
-        ScreenGetPixelAspectRatio();
-	pView->ymax = pView->cy + pView->sf / 2.0F * 
-        ScreenGetPixelAspectRatio();
+	pCamera->cx = cx;
 }
 
-void GraphViewUpdateDeltas(GraphView * pView)
+
+
+double CameraGetCenterY(Camera * pCamera)
 {
-	pView->dx = (pView->xmax - pView->xmin) / 
-        (double)ScreenGetWidth();
-	pView->dy = (pView->ymax - pView->ymin) / 
-        (double)ScreenGetHeight();
+	return pCamera->cy;
 }
 
-void GraphViewUpdatePerspective(GraphView * pView)
+void CameraSetCenterY(Camera * pCamera, double cy)
 {
-	GraphViewUpdateMinMax(pView);
-	GraphViewUpdateDeltas(pView);
+	pCamera->cy = cy;
 }
 
-void GraphViewUpdate(GraphView * pView)
+
+
+double CameraGetWidth(Camera * pCamera)
 {
-	GraphViewUpdatePerspective(pView);
+	return pCamera->width;	
 }
 
-double GraphViewGetCenterX(GraphView * pView)
+void CameraSetWidth(Camera * pCamera, double width)
 {
-	return pView->cx;
+	pCamera->width = width;
 }
 
-void GraphViewSetCenterX(GraphView * pView, double cx)
+
+
+double CameraGetHeight(Camera * pCamera)
 {
-	pView->cx = cx;
-	GraphViewUpdate(pView);
+	return pCamera->height;
 }
 
-double GraphViewGetCenterY(GraphView * pView)
+void CameraSetHeight(Camera * pCamera, double height)
 {
-	return pView->cy;
+	pCamera->height = height;
 }
 
-void GraphViewSetCenterY(GraphView * pView, double cy)
+
+
+double CameraGetAspectRatio(Camera * pCamera)
 {
-	pView->cy = cy;
-	GraphViewUpdate(pView);
+	return CameraGetWidth(pCamera) / CameraGetHeight(pCamera);
 }
 
-double GraphViewGetScaleFactor(GraphView * pView)
+void CameraSetPosition(Camera * pCamera,  double cx, double cy, double width)
 {
-	return pView->sf;
+	CameraSetCenterX(pCamera, cx);
+	CameraSetCenterY(pCamera, cy);
+	CameraSetWidth(pCamera, width);
+	CameraSetHeight(pCamera, width / CameraGetAspectRatio(pCamera));
 }
 
-void GraphViewSetScaleFactor(GraphView * pView, double sf)
+double CameraGetXmin(Camera * pCamera)
 {
-	pView->sf = sf;
-	GraphViewUpdate(pView);
+	return CameraGetCenterX(pCamera) - CameraGetWidth(pCamera) / 2.00;
 }
 
-int GraphViewGetCenterInString(GraphView * pView, char * pString)
+double CameraGetXmax(Camera * pCamera)
 {
-	return sprintf(pString, "center (%f,%f) ", pView->cx, pView->cy);
+	return CameraGetCenterX(pCamera) + CameraGetWidth(pCamera) / 2.00;
 }
 
-int GraphViewGetXaxisInString(GraphView * pView, char * pString)
+double CameraGetYmin(Camera * pCamera)
 {
-	return sprintf(pString, "x-axis (%f,%f) ", pView->xmin, pView->xmax);
+	return CameraGetCenterY(pCamera) - CameraGetHeight(pCamera) / 2.00;
 }
 
-int GraphViewGetYaxisInString(GraphView * pView, char * pString)
+double CameraGetYmax(Camera * pCamera)
 {
-	return sprintf(pString, "y-axis (%f,%f) ", pView->ymin, pView->ymax);
+	return CameraGetCenterY(pCamera) + CameraGetHeight(pCamera) / 2.00;
 }
 
-int GraphViewGetStatsInString(GraphView * pView, char * pString)
+
+
+void CameraZoom(Camera * pCamera, double scale)
 {
-	char * pS = pString;
-	pS += GraphViewGetCenterInString(pView, pS);
-    pS += GraphViewGetXaxisInString(pView, pS);
-    pS += GraphViewGetYaxisInString(pView, pS);
-    return (int)(pS - pString);
+	pCamera->width *= scale;
+	pCamera->height *= scale;
 }
+
+void CameraReset(Camera * pCamera)
+{
+	pCamera->cx = 0.00;
+	pCamera->cy = 0.00;
+	pCamera->width = 1.00;
+	pCamera->height = 1.00;
+}
+// TODO
+//double CameraGetRotation(Camera * pCamera);
+//void CameraSetRotation(Camera * pCamera, double angle);

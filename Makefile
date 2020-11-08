@@ -2,6 +2,7 @@ CC=gcc
 
 
 SRCS += main.c
+SRCS += fractalascii.c
 SRCS += mandelbrot.c
 SRCS += screen.c
 SRCS += camera.c

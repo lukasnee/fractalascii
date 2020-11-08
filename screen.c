@@ -1,26 +1,49 @@
 #include "screen.h"
 
+#include "config.h"
+
 #include <ncurses.h>
 #include <stdio.h>
 #include "timer.h"
 
-#include "config.h"
-
 #define DISP_MAX_FPS CONFIG_MAX_FPS
 
-uint8_t showFPS = CONFIG_SHOW_FPS;
-uint8_t exitScreenFlag = 0;
+Screen screen;
 
-const Screen screenDefault = {
-	.width = 0,
-	.height = 0,
-	.ratio = 0.0,
-    .pixelAspectRatio = 1.0
-};
+void ScreenReset()
+{
+	screen.pixelAspectRatio = 1.00;
+	screen.showFPS = DISP_MAX_FPS;
+	screen.exitRequest = 0;
+}
 
-Screen screen = screenDefault;
+int ScreenGetWidth()
+{
+	return getmaxx(stdscr) + 1;
+}
 
-void screenStart()
+int ScreenGetHeight()
+{
+	return getmaxy(stdscr) + 1;
+}
+
+double ScreenGetRatio()
+{
+	return (double)ScreenGetWidth()/(double)ScreenGetHeight();
+}
+
+// note. terminal ascii symbols usually have 2.0 aspect ratio
+void ScreenSetPixelAspectRatio(double pixelAspectRatio)
+{
+	screen.pixelAspectRatio = pixelAspectRatio;
+}
+
+double ScreenGetPixelAspectRatio()
+{
+	return screen.pixelAspectRatio;
+}
+
+static void screenStart()
 {
 	initscr();
 	cbreak();
@@ -30,14 +53,9 @@ void screenStart()
 	refresh();
 }
 
-void screenEnd()
+static void screenShowFrame()
 {
-	endwin();
-}
-
-void screenShowFrame()
-{
-	if(showFPS) 
+	if(screen.showFPS) 
 	{
 		static Timer fpstimer;
 		uint32_t fps;
@@ -51,50 +69,29 @@ void screenShowFrame()
 	}
 }
 
-void screenExit()
+void ScreenSetAsciiPixel(int x, int y, char asciiPixel)
 {
-	exitScreenFlag = 1;
+	mvaddch(y, x, asciiPixel);
+}
+
+static void screenExit()
+{
+	screen.exitRequest = 1;
+}
+
+static void screenEnd()
+{
+	endwin();
 }
 
 void screenRun( void (*drawFnc)())
 {
 	screenStart();
 
-	while(!exitScreenFlag)
+	while(!screen.exitRequest)
 	{
 		drawFnc();
 		screenShowFrame();
 	}
 	screenEnd();
-}
-
-void ScreenUpdate()
-{
-	screen.width = ScreenGetWidth();
-	screen.height = ScreenGetHeight();
-	screen.ratio = ScreenGetRatio();
-}
-
-int ScreenGetWidth()
-{
-    return getmaxx(stdscr) + 1;
-}
-
-int ScreenGetHeight()
-{
-    return getmaxy(stdscr) + 1;
-}
-
-double ScreenGetRatio()
-{
-    return (double)ScreenGetWidth()/(double)ScreenGetHeight();
-}
-
-void ScreenSetPixelAspectRatio(double pixelAspectRatio)
-{
-    screen.pixelAspectRatio = pixelAspectRatio;
-}
-double ScreenGetPixelAspectRatio()
-{
-    return screen.pixelAspectRatio;
 }

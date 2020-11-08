@@ -5,23 +5,19 @@
 
 typedef struct Screen_
 {
-    uint32_t width, height; // size in pixels
-    double ratio; // derived on ScreenUpdate()
-    double pixelAspectRatio;
+	double pixelAspectRatio;
+	uint8_t showFPS;
+	uint8_t exitRequest;
 }Screen;
 
-extern const Screen screenDefault;
-
-void ScreenUpdate();
-void screenStart();
-void ScreenEnd();
-void ScreenFrameShow();
-void screenExit();
-void screenRun(void (*drawFnc)());
-
+void ScreenReset();
 int ScreenGetWidth();
 int ScreenGetHeight();
 double ScreenGetRatio();
 void ScreenSetPixelAspectRatio(double pixelAspectRatio);
 double ScreenGetPixelAspectRatio();
+
+void ScreenSetAsciiPixel(int x, int y, char asciiPixel);
+void screenRun(void (*drawFnc)());
+
 #endif //SCREEN_H

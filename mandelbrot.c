@@ -2,21 +2,32 @@
 #include <ncurses.h>
 #include "stats.h"
 
-uint16_t MandelbrotGet(double x, double y)
+static uint32_t max_iterations = 1000;
+
+uint32_t MandelbrotGetMaxIterations()
 {
-    static uint32_t max_iterations = 100;
+	return max_iterations;
+}
 
-    uint16_t k;
-    double u = 0.0, v = 0.0;
-    double u2 = u * u, v2 = v * v;
+void MandelbrotSetMaxIterations(uint32_t value)
+{
+	max_iterations = value;
+}
 
-    for (k = 1; k < max_iterations && (u2 + v2 < 4.0); k++)
-    {
-        v = 2 * u * v + y;
-        u = u2 - v2 + x;
-        u2 = u * u;
-        v2 = v * v;
-    };
+uint32_t MandelbrotGet(double x, double y)
+{
 
-    return k;
+	uint32_t k;
+	double u = 0.0, v = 0.0;
+	double u2 = u * u, v2 = v * v;
+
+	for (k = 1; k < MandelbrotGetMaxIterations() && (u2 + v2 < 4.0); k++)
+	{
+		v = 2 * u * v + y;
+		u = u2 - v2 + x;
+		u2 = u * u;
+		v2 = v * v;
+	};
+
+	return k;
 }
