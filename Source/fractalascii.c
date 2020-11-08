@@ -155,22 +155,22 @@ static void FractalasciiHelpWindow(Fractalascii * pFascii)
 		int y = 0, x = 0;
 
 		ctrlWin = derwin(stdscr, h, w, 
-			ScreenGetHeight() / 2 - h, 
-			ScreenGetWidth() / 2 - w);
+			ScreenGetHeight() / 2 - h / 2, 
+			ScreenGetWidth() / 2 - w / 2);
 		
 		wclear(ctrlWin);
 		box(ctrlWin, 0, 0); y++; x++;
         
 		mvwprintw(ctrlWin, y++, x, "\t\tControls");
 		mvwhline(ctrlWin, y++, x, '-',  w - 2 * x);
-		mvwprintw(ctrlWin, y++, x, "`h` - see this help window");
-		mvwprintw(ctrlWin, y++, x, "`w`, `a`, `s`, `d` - move");
+		mvwprintw(ctrlWin, y++, x, "`h` - toggle commands help window");
+		mvwprintw(ctrlWin, y++, x, "`w`, `a`, `s`, `d` - move camera");
 		mvwprintw(ctrlWin, y++, x, "`e` - zoom in 10%");
 		mvwprintw(ctrlWin, y++, x, "`q` - zoom out 10%");
 		mvwprintw(ctrlWin, y++, x, "`r` - reset camera");
 		mvwprintw(ctrlWin, y++, x, "`g` - see stats");
 		mvwprintw(ctrlWin, y++, x, "`c` - exit");
-		mvwprintw(ctrlWin, y++, x, "`1`, `2`, `3` ... - interesting views");
+		mvwprintw(ctrlWin, y++, x, "`1`, `2`, `3` ... - hmmm");
         y++; h = y;
 
 		wrefresh(ctrlWin);

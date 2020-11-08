@@ -15,8 +15,11 @@ $ ./fractalascii
 ```
 
 # Controls
-- `w`, `a`, `s`, `d` - move
+- `h` - toggle help window
+- `w`, `a`, `s`, `d` - move camera
 - `e` - zoom in 10%
 - `q` - zoom out 10%
 - `r` - reset camera
-- `1`, `2`, `3` ... - interesting views
+- `g` - see stats
+- `c` - exit
+- `1`, `2`, `3` `...` - I think you'll have to check yourself...
