@@ -1,5 +1,4 @@
-#ifndef TIMER_H
-#define TIMER_H
+#pragma once
 
 #include <stdint.h>
 #include <sys/time.h>
@@ -12,5 +11,3 @@ typedef struct Timer_
 
 void timerDelayMs(uint32_t ms);
 void timerGetFPS(Timer * pTimer, uint32_t * fFPS);
-
-#endif //TIMER_H

@@ -1,5 +1,4 @@
-#ifndef SCREEN_H
-#define SCREEN_H
+#pragma once
 
 #include <stdint.h>
 
@@ -21,5 +20,3 @@ void ScreenSetAsciiPixel(int x, int y, char asciiPixel);
 void ScreenRefresh();
 void ScreenRun(void (*drawFnc)(void * p), void * p);
 void ScreenExit();
-
-#endif //SCREEN_H

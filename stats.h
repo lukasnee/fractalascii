@@ -1,5 +1,4 @@
-#ifndef STATS_H
-#define STATS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -22,5 +21,3 @@ int64_t StatsGetMax(Stats stats);
 int64_t StatsGetMin(Stats stats);
 int64_t StatsGetAvg(Stats stats);
 void StatsToString(Stats stats, char * pStatName, char * pString);
-
-#endif //STATS_H

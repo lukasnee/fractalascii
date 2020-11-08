@@ -1,5 +1,4 @@
-#ifndef CAMERA_H
-#define CAMERA_H
+#pragma once
 
 //todo add rotation
 typedef struct Camera_
@@ -30,5 +29,3 @@ void CameraZoom(Camera * pCamera, double scale);
 void CameraReset(Camera * pCamera);
 //double CameraGetRotation(Camera * pCamera);
 //void CameraSetRotation(Camera * pCamera, double angle);
-
-#endif //CAMERA_H

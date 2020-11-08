@@ -1,5 +1,4 @@
-#ifndef FRACTALASCII_H
-#define FRACTALASCII_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -21,5 +20,3 @@ typedef struct Fractalascii_
 } Fractalascii;
 
 void FractalasciiStart(const char * asciiPallete, double pixelAspectRatio);
-
-#endif //FRACTALASCII_H
