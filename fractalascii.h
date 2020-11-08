@@ -2,6 +2,7 @@
 #define FRACTALASCII_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "screen.h"
 #include "camera.h"
@@ -14,7 +15,8 @@ typedef struct Fractalascii_
 	char * asciiPallete; 
     uint16_t asciiPalleteSize;
 	Stats iterationStats;
-	uint8_t showStats;
+	bool showStats;
+    bool showHelpWindow;
 
 } Fractalascii;
 

@@ -43,7 +43,7 @@ double ScreenGetPixelAspectRatio()
 	return screen.pixelAspectRatio;
 }
 
-static void screenStart()
+static void ScreenStart()
 {
 	initscr();
 	cbreak();
@@ -53,7 +53,7 @@ static void screenStart()
 	refresh();
 }
 
-static void screenShowFrame()
+static void ScreenProcessFPSOverlay()
 {
 	if(screen.showFPS) 
 	{
@@ -62,11 +62,11 @@ static void screenShowFrame()
 		timerGetFPS(&fpstimer, &fps);
 		mvprintw(0, 0, "[%ldFPS]", fps);
 	}
-	refresh();
-	if(DISP_MAX_FPS)
-	{
-		timerDelayMs(1000/DISP_MAX_FPS);
-	}
+}
+
+static void ScreenShowFrame()
+{
+	ScreenProcessFPSOverlay();
 }
 
 void ScreenSetAsciiPixel(int x, int y, char asciiPixel)
@@ -74,24 +74,38 @@ void ScreenSetAsciiPixel(int x, int y, char asciiPixel)
 	mvaddch(y, x, asciiPixel);
 }
 
-static void screenExit()
+static void ScreenLimitFPS()
+{
+	if(DISP_MAX_FPS)
+	{
+		timerDelayMs(1000/DISP_MAX_FPS); //todo legit, non-blocking 
+	}
+}
+
+void ScreenExit()
 {
 	screen.exitRequest = 1;
 }
 
-static void screenEnd()
+static void ScreenEnd()
 {
 	endwin();
 }
 
-void screenRun( void (*drawFnc)())
+void ScreenRefresh()
 {
-	screenStart();
+	refresh();
+}
+
+void ScreenRun(void (*drawFnc)(void * p), void * p)
+{
+	ScreenStart();
 
 	while(!screen.exitRequest)
 	{
-		drawFnc();
-		screenShowFrame();
+		drawFnc(p);
+		ScreenShowFrame();
+		ScreenLimitFPS();
 	}
-	screenEnd();
+	ScreenEnd();
 }

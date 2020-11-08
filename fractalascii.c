@@ -11,98 +11,173 @@
 
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #define AVERAGE(a, b) (((a) + (b)) / 2)
 #define MAP(x, in_min, in_max, out_min, out_max) \
 (((x) - (in_min)) * ((out_max) - (out_min)) / ((in_max) - (in_min)) + (out_min))
 
-Fractalascii fa;
+static void FractalasciiDraw(Fractalascii * pFascii);
 
-static int64_t FractalasciiNormalize(int64_t k)
+static void FractalasciiReset(Fractalascii * pFascii)
+{
+	ScreenReset();
+	CameraReset(&pFascii->cam);
+	StatsReset(&pFascii->iterationStats);
+	pFascii->showStats = CONFIG_SHOW_STATS_BY_DEFAULT;
+	pFascii->showHelpWindow = CONFIG_SHOW_HELP_WINDOW_BY_DEFAULT;
+}
+
+static void FractalasciiInit(Fractalascii * pFascii, 
+	const char * asciiPallete, double pixelAspectRatio)
+{
+	pFascii->asciiPallete = (char *)asciiPallete;
+	pFascii->asciiPalleteSize = strlen(asciiPallete);
+
+	ScreenSetPixelAspectRatio(pixelAspectRatio);
+	CameraSetPosition(&pFascii->cam, -0.748158,0.088871, 1.0); //default
+
+	uint8_t init = 1; 
+	while(init--)
+	{
+		FractalasciiDraw(pFascii);
+	}
+}
+
+// makes sure zoom and deltas are in synch if screen dimensions changes
+static void FractalasciiAdjustToScreen(Fractalascii * pFascii)
+{
+	static int prevWidth = 1; 
+	static int prevHeight = 1;
+
+	double scaleDelta = AVERAGE((double)ScreenGetWidth() / (double)prevWidth, 
+								(double)ScreenGetHeight() / (double)prevHeight);
+			
+	CameraZoom(&pFascii->cam, scaleDelta);
+
+	pFascii->dx = CameraGetWidth(&pFascii->cam) / 
+		ScreenGetWidth(&pFascii->cam);
+
+ 	pFascii->dy = CameraGetHeight(&pFascii->cam) / 
+		ScreenGetHeight(&pFascii->cam) / 
+	 		ScreenGetPixelAspectRatio();
+
+	CameraSetCenterX(&pFascii->cam, CameraGetCenterX(&pFascii->cam) + 
+		(double)(ScreenGetWidth() - prevWidth) * pFascii->dx / 2.0);
+
+	CameraSetCenterY(&pFascii->cam, CameraGetCenterY(&pFascii->cam) + 
+		(double)(ScreenGetHeight() - prevHeight) * pFascii->dy / 2.0);
+
+	prevWidth = ScreenGetWidth(); 
+	prevHeight = ScreenGetHeight();
+}
+
+static int32_t FractalasciiMapIterationToAsciiPallete(Fractalascii * pFascii, 
+	uint32_t k)
+{
+	return (uint32_t)MAP(k, 
+		(int32_t)StatsGetMin(pFascii->iterationStats), 
+		(int32_t)StatsGetMax(pFascii->iterationStats), 
+		(int32_t)0, 
+		(int32_t)pFascii->asciiPalleteSize
+	);
+
+}
+
+static uint32_t FractalasciiNormalize(Fractalascii * pFascii, uint32_t k)
 {
 	if(k > 2 && k < MandelbrotGetMaxIterations() &&
-		statsGetMin(fa.iterationStats) < statsGetMax(fa.iterationStats))
+		(uint32_t)StatsGetMin(pFascii->iterationStats) < 
+			(uint32_t)StatsGetMax(pFascii->iterationStats))
 	{
-		k = MAP(k, 
-				statsGetMin(fa.iterationStats), 
-				statsGetMax(fa.iterationStats), 
-				(int64_t)0, 
-				(int64_t)fa.asciiPalleteSize);
+		k = FractalasciiMapIterationToAsciiPallete(pFascii, k);
 	}
 	return k;
 }
 
-static void FractalasciiDrawCharByIntensity(uint16_t x, uint16_t y, uint16_t i)
+static void FractalasciiDrawCharByIntensity(Fractalascii * pFascii, 
+	uint16_t x, uint16_t y, uint32_t i)
 {
-	ScreenSetAsciiPixel(x, y, i <= fa.asciiPalleteSize ? fa.asciiPallete[i] : ' ');
+	ScreenSetAsciiPixel(x, y, 
+		i <= pFascii->asciiPalleteSize ? pFascii->asciiPallete[i] : ' ');
 }
 
-uint32_t FractalasciiDrawPixel(uint16_t pxl_x, uint16_t pxl_y, 
+uint32_t FractalasciiDrawPixel(Fractalascii * pFascii, 
+	uint16_t pxl_x, uint16_t pxl_y, 
 	double x, double y)
 {
 	uint32_t k, kn;
 	k = MandelbrotGet(x, y);
-	kn = (uint16_t)FractalasciiNormalize(k);
-	FractalasciiDrawCharByIntensity(pxl_x, pxl_y, kn);
+	kn = (uint32_t)FractalasciiNormalize(pFascii, k);
+	FractalasciiDrawCharByIntensity(pFascii, pxl_x, pxl_y, kn);
 	return k;
 }
 
-// makes sure zoom and deltas are in synch if screen dimensions changes
-static void FractalasciiAdjustToScreen()
-{
-	static double prevWidth, prevHeight;
-	double scaleDelta;
-	scaleDelta = AVERAGE(ScreenGetWidth() / prevWidth, 
-						ScreenGetHeight() / prevHeight);
-		
-	CameraZoom(&fa.cam, scaleDelta);
-	
-	prevWidth = (int)ScreenGetWidth(); 
-	prevHeight = (int)ScreenGetHeight();
-
-	fa.dx = CameraGetWidth(&fa.cam) / ScreenGetWidth(&fa.cam);
- 	fa.dy = CameraGetHeight(&fa.cam) / ScreenGetHeight(&fa.cam) * 
-	 	ScreenGetPixelAspectRatio();
-}
-
-static void FractalasciiDraw()
+static void FractalasciiDraw(Fractalascii * pFascii)
 {
 	Stats iterationStats;
 	double x, y;  
 	int32_t pxl_x, pxl_y;
 	for (pxl_y = 0; pxl_y < ScreenGetHeight(); pxl_y++)
 	{
-		y = CameraGetYmax(&fa.cam) - pxl_y * fa.dy;
+		y = CameraGetYmax(&pFascii->cam) - pxl_y * pFascii->dy;
 		for (pxl_x = 0; pxl_x < ScreenGetWidth(); pxl_x++)
 		{
-			x = CameraGetXmin(&fa.cam) + pxl_x * fa.dx;
-			uint32_t k = FractalasciiDrawPixel(pxl_x, pxl_y, x, y);
-			statsCollect(k, &iterationStats);
+			x = CameraGetXmin(&pFascii->cam) + pxl_x * pFascii->dx;
+			uint32_t k = FractalasciiDrawPixel(pFascii, pxl_x, pxl_y, x, y);
+			StatsCollect(k, &iterationStats);
 		}
 	} 
-
-	statsRecord(&iterationStats, &fa.iterationStats);
+	StatsRecord(&iterationStats, &pFascii->iterationStats);
 }
 
-static void FractalasciiStatsShow(int16_t x,int16_t y)
+static void FractalasciiDrawStats(Fractalascii * pFascii, int16_t x, int16_t y)
 {
-	char statsStr[0x200];
-	statsToString(fa.iterationStats, "iteration", statsStr);
-	mvprintw(y++, x, statsStr); 
-	mvprintw(y++, x, "center\t[x:%e, y:%e]", CameraGetCenterX(&fa.cam), CameraGetCenterY(&fa.cam)); 
-	mvprintw(y++, x, "width\t[%e]", CameraGetWidth(&fa.cam)); 
-	mvprintw(y++, x, "height\t[%e]", CameraGetHeight(&fa.cam)); 
-}
-
-static void FractalasciiStats(int16_t x,int16_t y)
-{
-	if(fa.showStats) 
+	if(pFascii->showStats) 
 	{
-		FractalasciiStatsShow(x, y);
+		char statsStr[0x200];
+		StatsToString(pFascii->iterationStats, "iteration", statsStr);
+
+		mvprintw(y++, x, statsStr); 
+		mvprintw(y++, x, "center\t[x:%e, y:%e]", 
+			CameraGetCenterX(&pFascii->cam), CameraGetCenterY(&pFascii->cam)); 
+		mvprintw(y++, x, "width\t[%e]", CameraGetWidth(&pFascii->cam)); 
+		mvprintw(y++, x, "height\t[%e]", CameraGetHeight(&pFascii->cam)); 
 	}
 }
 
-static void FractalasciiReactToControls(Fractalascii * pFA)
+static void FractalasciiHelpWindow(Fractalascii * pFascii)
+{
+	if(pFascii->showHelpWindow)
+	{
+		WINDOW * ctrlWin;
+		static int w = 40, h = 12;
+		int y = 0, x = 0;
+
+		ctrlWin = derwin(stdscr, h, w, 
+			ScreenGetHeight() / 2 - h, 
+			ScreenGetWidth() / 2 - w);
+		
+		wclear(ctrlWin);
+		box(ctrlWin, 0, 0); y++; x++;
+        
+		mvwprintw(ctrlWin, y++, x, "\t\tControls");
+		mvwhline(ctrlWin, y++, x, '-',  w - 2 * x);
+		mvwprintw(ctrlWin, y++, x, "`h` - see this help window");
+		mvwprintw(ctrlWin, y++, x, "`w`, `a`, `s`, `d` - move");
+		mvwprintw(ctrlWin, y++, x, "`e` - zoom in 10%");
+		mvwprintw(ctrlWin, y++, x, "`q` - zoom out 10%");
+		mvwprintw(ctrlWin, y++, x, "`r` - reset camera");
+		mvwprintw(ctrlWin, y++, x, "`g` - see stats");
+		mvwprintw(ctrlWin, y++, x, "`c` - exit");
+		mvwprintw(ctrlWin, y++, x, "`1`, `2`, `3` ... - interesting views");
+        y++; h = y;
+
+		wrefresh(ctrlWin);
+	}
+}
+
+static void FractalasciiReactToControls(Fractalascii * pFascii)
 {
 	double s = 0.5; // step in %
 	double sDec = 1.00 - s;
@@ -111,59 +186,84 @@ static void FractalasciiReactToControls(Fractalascii * pFA)
 
    int c = getch();
 
-	if(c == 'e')CameraZoom(&pFA->cam, sDec);
-	if(c == 'q')CameraZoom(&pFA->cam, sInc); 
-	if(c == 'w')CameraSetCenterY(&pFA->cam, CameraGetCenterY(&pFA->cam) + (CameraGetHeight(&pFA->cam))/ms); 
-	if(c == 'a')CameraSetCenterX(&pFA->cam, CameraGetCenterX(&pFA->cam) - (CameraGetWidth(&pFA->cam))/ms); 
-	if(c == 's')CameraSetCenterY(&pFA->cam, CameraGetCenterY(&pFA->cam) - (CameraGetHeight(&pFA->cam))/ms); 
-	if(c == 'd')CameraSetCenterX(&pFA->cam, CameraGetCenterX(&pFA->cam) + (CameraGetWidth(&pFA->cam))/ms); 
-
-	if(c == 'r')CameraSetPosition(&pFA->cam, 0.0,       0.0,        0.0);
-	if(c == '1')CameraSetPosition(&pFA->cam, -0.761574, -0.08475,   6.0);
-	if(c == '2')CameraSetPosition(&pFA->cam, -7.362165077819709e-01, -2.071562798303199e-01,   6.0);
-	
-	if(c == 'h')
+	if(c == 'h') 
 	{
-		WINDOW * win;
-		win = newwin(30, 30, ScreenGetHeight()/2-30/2, ScreenGetHeight()/2-30/2);
-		wborder(win, 0, 0, 0, 0, 0, 0, 0, 0);
-		mvwprintw(win, 0, 0, 
-			" # Controls\n\r\
-			- `w`, `a`, `s`, `d` - move\n\r\
-			- `e` - zoom in 10%\n\r\
-			- `q` - zoom out 10%\n\r\
-			- `r` - reset camera\n\r\
-			- `1`, `2`, `3` ... - interesting views\n\r");
-		wrefresh(win);
+		pFascii->showHelpWindow = !pFascii->showHelpWindow;
+	}
+	if(c == 'g') 
+	{
+		pFascii->showStats = !pFascii->showStats;
+	}
+	if(c == 'e')
+	{
+		CameraZoom(&pFascii->cam, sDec);
+	}
+	if(c == 'q')
+	{
+		CameraZoom(&pFascii->cam, sInc); 
+	}
+	if(c == 'w')
+	{
+		CameraSetCenterY(&pFascii->cam, 
+			CameraGetCenterY(&pFascii->cam) + 
+				(CameraGetHeight(&pFascii->cam)) / ms); 
+	}
+	if(c == 'a')
+	{
+		CameraSetCenterX(&pFascii->cam, 
+			CameraGetCenterX(&pFascii->cam) - 
+				(CameraGetWidth(&pFascii->cam)) / ms); 
+	}
+	if(c == 's')
+	{
+		CameraSetCenterY(&pFascii->cam, 
+			CameraGetCenterY(&pFascii->cam) - 
+				(CameraGetHeight(&pFascii->cam)) / ms);
+	} 
+	if(c == 'd')
+	{
+		CameraSetCenterX(&pFascii->cam, 
+			CameraGetCenterX(&pFascii->cam) + 
+				(CameraGetWidth(&pFascii->cam)) / ms); 
+	}
+	if(c == 'r')
+	{
+		CameraSetPosition(&pFascii->cam, 0.0, 0.0, 0.0);
+	}
+	
+	if(c == 'c')
+	{
+		ScreenExit();
+	}
+
+	if(c == '1')
+	{
+		CameraSetPosition(&pFascii->cam, -0.761574, -0.08475, 6.0);
+	}
+	if(c == '2')
+	{
+		CameraSetPosition(&pFascii->cam, 
+			-7.362165077819709e-01, -2.071562798303199e-01, 6.0);
 	}
 }
 
-static void FractalasciiRun()
+static void FractalasciiRun(void * p)
 {
-	FractalasciiAdjustToScreen();
-	FractalasciiDraw();
-	FractalasciiStats(0, 0);
-	FractalasciiReactToControls(&fa); 
+	Fractalascii * pFascii = (Fractalascii *)p;
+	//FractalasciiAdjustToScreen(pFascii);
+	FractalasciiDraw(pFascii);
+	FractalasciiDrawStats(pFascii, 0, 1);
+	FractalasciiHelpWindow(pFascii);
+	
+	ScreenRefresh();
+
+	FractalasciiReactToControls(pFascii); 
 }
 
 void FractalasciiStart(const char * asciiPallete, double pixelAspectRatio)
 {	
-	ScreenReset();
-	ScreenSetPixelAspectRatio(pixelAspectRatio);
-	CameraReset(&fa.cam);
-	fa.asciiPallete = (char *)asciiPallete;
-	fa.asciiPalleteSize = strlen(asciiPallete);
-	statsReset(&fa.iterationStats);
-	fa.showStats = CONFIG_SHOW_MANDELBROT_STATS;
-
-	CameraSetPosition(&fa.cam, -0.748158,0.088871, 6.0);
-	
-	// iterate twice to better process initial image 
-	uint8_t init = 2; 
-	while(init--)
-	{
-		FractalasciiDraw();
-	}
-
-	screenRun(FractalasciiRun);
+	Fractalascii fa;
+	FractalasciiReset(&fa);
+	FractalasciiInit(&fa, asciiPallete, pixelAspectRatio);
+	ScreenRun(FractalasciiRun, (void *)&fa);
 }

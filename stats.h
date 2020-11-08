@@ -15,12 +15,12 @@ typedef struct Stats_
 
 extern const Stats statsDefault;
 
-void statsReset(Stats *pStats);
-void statsCollect(int64_t value, Stats * pStats);
-void statsRecord(Stats * pNew, Stats * pOld);
-int64_t statsGetMax(Stats stats);
-int64_t statsGetMin(Stats stats);
-int64_t statsGetAvg(Stats stats);
-void statsToString(Stats stats, char * pStatName, char * pString);
+void StatsReset(Stats *pStats);
+void StatsCollect(int64_t value, Stats * pStats);
+void StatsRecord(Stats * pNew, Stats * pOld);
+int64_t StatsGetMax(Stats stats);
+int64_t StatsGetMin(Stats stats);
+int64_t StatsGetAvg(Stats stats);
+void StatsToString(Stats stats, char * pStatName, char * pString);
 
 #endif //STATS_H

@@ -18,6 +18,8 @@ void ScreenSetPixelAspectRatio(double pixelAspectRatio);
 double ScreenGetPixelAspectRatio();
 
 void ScreenSetAsciiPixel(int x, int y, char asciiPixel);
-void screenRun(void (*drawFnc)());
+void ScreenRefresh();
+void ScreenRun(void (*drawFnc)(void * p), void * p);
+void ScreenExit();
 
 #endif //SCREEN_H
