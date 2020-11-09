@@ -49,24 +49,25 @@ static void ScreenStart()
 	cbreak();
 	noecho();
 	keypad(stdscr, TRUE);
+    start_color();
 	clear();
 	refresh();
+}
+
+static void ScreenShowFrame()
+{
+    static Timer fpstimer;
+    uint32_t fps;
+    timerGetFPS(&fpstimer, &fps);
+    mvprintw(0, 0, "[%ldFPS]", fps);
 }
 
 static void ScreenProcessFPSOverlay()
 {
 	if(screen.showFPS) 
 	{
-		static Timer fpstimer;
-		uint32_t fps;
-		timerGetFPS(&fpstimer, &fps);
-		mvprintw(0, 0, "[%ldFPS]", fps);
+        ScreenShowFrame();
 	}
-}
-
-static void ScreenShowFrame()
-{
-	ScreenProcessFPSOverlay();
 }
 
 void ScreenSetAsciiPixel(int x, int y, char asciiPixel)
@@ -94,7 +95,7 @@ static void ScreenEnd()
 
 void ScreenRefresh()
 {
-	refresh();
+	ScreenProcessFPSOverlay();
 }
 
 void ScreenRun(void (*drawFnc)(void * p), void * p)
@@ -104,7 +105,6 @@ void ScreenRun(void (*drawFnc)(void * p), void * p)
 	while(!screen.exitRequest)
 	{
 		drawFnc(p);
-		ScreenShowFrame();
 		ScreenLimitFPS();
 	}
 	ScreenEnd();

@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "typeinfo": "c",
-        "*.tcc": "c"
+        "*.tcc": "c",
+        "optional": "c",
+        "random": "c"
     }
 }

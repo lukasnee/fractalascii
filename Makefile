@@ -13,16 +13,32 @@ SRCS += Source/timer.c
 
 INCLUDES = Include/
 
-FLAGS = -lcurses -Wall -g $(foreach d, $(INCLUDES), -I$d)
+FLAGS = -lcurses -Wall $(foreach d, $(INCLUDES), -I$d)
 
-.PHONY: $(TARGET)
-all: $(TARGET) run
-	
-$(TARGET):
+.PHONY: clean
+clean:
 	rm -rf .Build/
 	mkdir .Build/
-	$(CC) $(SRCS) $(FLAGS) -o .Build/$(TARGET)
 
-run:
+.PHONY: $(TARGET)
+$(TARGET): clean
+	mkdir .Build/Release/ 
+	$(CC) $(SRCS) $(FLAGS) -o .Build/Release/$(TARGET)
+
+.PHONY: $(TARGET).debug
+$(TARGET).debug: clean
+	mkdir .Build/Debug/ 
+	$(CC) $(SRCS) $(FLAGS) -g -o .Build/Debug/$(TARGET)
+
+.PHONY: run
+run: $(TARGET)
 	clear
-	.Build/$(TARGET)
+	.Build/Release/$(TARGET)
+
+.PHONY: run.debug
+run.debug: $(TARGET).debug
+	clear
+	.Build/Debug/$(TARGET)
+
+.PHONY: all
+all: run

@@ -1,8 +1,11 @@
-# fractalASCII
 
-![fractalascii-demo-by-lukasnee](fractalascii-demo.png)
+![fractalascii-demo-by-lukasnee](Resources/fractalascii-demo.png)
 
-ASCII drawn [Mandelbrot set](https://en.wikipedia.org/wiki/Mandelbrot_set) terminal navigator. Made with [ncurses](https://en.wikipedia.org/wiki/Ncurses).
+# FractalASCII
+
+ASCII drawn [Mandelbrot set](https://en.wikipedia.org/wiki/Mandelbrot_set) terminal navigator. Made with [ncurses](https://en.wikipedia.org/wiki/Ncurses). <br>
+Coding practice, developed on a raspberryPi. License: MIT. 
+<br>
 
 # Setup
 
@@ -15,11 +18,8 @@ $ ./fractalascii
 ```
 
 # Controls
-- `h` - toggle help window
-- `w`, `a`, `s`, `d` - move camera
-- `e` - zoom in 10%
-- `q` - zoom out 10%
-- `r` - reset camera
-- `g` - see stats
-- `c` - exit
-- `1`, `2`, `3` `...` - I think you'll have to check yourself...
+
+
+# TODO
+- Camera rotation
+- Rewrite all in C++

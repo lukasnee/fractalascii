@@ -2,7 +2,7 @@
 #include <ncurses.h>
 #include "stats.h"
 
-static uint32_t max_iterations = 1000;
+static uint32_t max_iterations = 5000;
 
 uint32_t MandelbrotGetMaxIterations()
 {

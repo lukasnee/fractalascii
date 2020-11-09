@@ -54,7 +54,7 @@ void CameraSetHeight(Camera * pCamera, double height)
 
 double CameraGetAspectRatio(Camera * pCamera)
 {
-	return CameraGetWidth(pCamera) / CameraGetHeight(pCamera);
+	return ScreenGetRatio();
 }
 
 void CameraSetPosition(Camera * pCamera,  double cx, double cy, double width)
@@ -98,7 +98,7 @@ void CameraReset(Camera * pCamera)
 	pCamera->cx = 0.00;
 	pCamera->cy = 0.00;
 	pCamera->width = 1.00;
-	pCamera->height = 1.00;
+	pCamera->height = 1.00 / CameraGetAspectRatio(pCamera);
 }
 // TODO
 //double CameraGetRotation(Camera * pCamera);
